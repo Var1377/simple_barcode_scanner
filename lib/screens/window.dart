@@ -14,8 +14,6 @@ class WindowBarcodeScanner extends StatelessWidget {
   final bool isShowFlashIcon;
   final ScanType scanType;
   final Function(String) onScanned;
-  final String? appBarTitle;
-  final bool? centerTitle;
 
   const WindowBarcodeScanner({
     super.key,
@@ -24,8 +22,6 @@ class WindowBarcodeScanner extends StatelessWidget {
     required this.isShowFlashIcon,
     required this.scanType,
     required this.onScanned,
-    this.appBarTitle,
-    this.centerTitle,
   });
 
   @override
@@ -38,46 +34,31 @@ class WindowBarcodeScanner extends StatelessWidget {
       isPermissionGranted = granted;
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(appBarTitle ?? kScanPageTitle),
-        centerTitle: centerTitle,
-        leading: IconButton(
-          onPressed: () {
-            /// send close event to web-view
-            controller.postWebMessage(json.encode({"event": "close"}));
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back_ios),
+    return FutureBuilder<bool>(
+        future: initPlatformState(
+          controller: controller,
         ),
-      ),
-      body: FutureBuilder<bool>(
-          future: initPlatformState(
-            controller: controller,
-          ),
-          builder: (context, snapshot) {
-            if (snapshot.hasData && snapshot.data != null) {
-              return Webview(
-                controller,
-                permissionRequested: (url, permissionKind, isUserInitiated) =>
-                    _onPermissionRequested(
-                  url: url,
-                  kind: permissionKind,
-                  isUserInitiated: isUserInitiated,
-                  context: context,
-                  isPermissionGranted: isPermissionGranted,
-                ),
-              );
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text(snapshot.error.toString()),
-              );
-            }
-            return const Center(
-              child: CircularProgressIndicator(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data != null) {
+            return Webview(
+              controller,
+              permissionRequested: (url, permissionKind, isUserInitiated) => _onPermissionRequested(
+                url: url,
+                kind: permissionKind,
+                isUserInitiated: isUserInitiated,
+                context: context,
+                isPermissionGranted: isPermissionGranted,
+              ),
             );
-          }),
-    );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        });
   }
 
   /// Checks if camera permission has already been granted
@@ -97,8 +78,7 @@ class WindowBarcodeScanner extends StatelessWidget {
         context: context,
         builder: (BuildContext context) => AlertDialog(
           title: const Text('Permission requested'),
-          content:
-              Text('\'${kind.name}\' permission is require to scan qr/barcode'),
+          content: Text('\'${kind.name}\' permission is require to scan qr/barcode'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -125,26 +105,21 @@ class WindowBarcodeScanner extends StatelessWidget {
   }
 
   String getAssetFileUrl({required String asset}) {
-    final assetsDirectory = p.join(p.dirname(Platform.resolvedExecutable),
-        'data', 'flutter_assets', asset);
+    final assetsDirectory = p.join(p.dirname(Platform.resolvedExecutable), 'data', 'flutter_assets', asset);
     return Uri.file(assetsDirectory).toString();
   }
 
-  Future<bool> initPlatformState(
-      {required WebviewController controller}) async {
+  Future<bool> initPlatformState({required WebviewController controller}) async {
     String? barcodeNumber;
 
     try {
       await controller.initialize();
-      await controller
-          .loadUrl(getAssetFileUrl(asset: PackageConstant.barcodeFilePath));
+      await controller.loadUrl(getAssetFileUrl(asset: PackageConstant.barcodeFilePath));
 
       /// Listen to web to receive barcode
       controller.webMessage.listen((event) {
         if (event['methodName'] == "successCallback") {
-          if (event['data'] is String &&
-              event['data'].isNotEmpty &&
-              barcodeNumber == null) {
+          if (event['data'] is String && event['data'].isNotEmpty && barcodeNumber == null) {
             barcodeNumber = event['data'];
             onScanned(barcodeNumber!);
           }

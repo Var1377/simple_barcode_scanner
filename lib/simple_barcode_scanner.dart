@@ -19,12 +19,6 @@ class SimpleBarcodeScannerPage extends StatelessWidget {
   ///Enter enum scanType, It can be BARCODE, QR, DEFAULT
   final ScanType scanType;
 
-  ///AppBar Title
-  final String? appBarTitle;
-
-  ///center Title
-  final bool? centerTitle;
-
   /// Specify a child widget to be positioned beneath the scanner.
   /// This is beneficial when you need to include a customized text field
   /// for manual entry of barcode/QR code.
@@ -54,8 +48,6 @@ class SimpleBarcodeScannerPage extends StatelessWidget {
     this.cancelButtonText = "Cancel",
     this.isShowFlashIcon = false,
     this.scanType = ScanType.barcode,
-    this.appBarTitle,
-    this.centerTitle,
     this.child,
   });
 
@@ -66,8 +58,6 @@ class SimpleBarcodeScannerPage extends StatelessWidget {
       cancelButtonText: cancelButtonText,
       isShowFlashIcon: isShowFlashIcon,
       scanType: scanType,
-      appBarTitle: appBarTitle,
-      centerTitle: centerTitle,
       child: child,
       onScanned: (res) {
         Navigator.pop(context, res);

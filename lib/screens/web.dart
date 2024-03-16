@@ -13,8 +13,6 @@ class BarcodeScanner extends StatelessWidget {
   final bool isShowFlashIcon;
   final ScanType scanType;
   final Function(String) onScanned;
-  final String? appBarTitle;
-  final bool? centerTitle;
   final Widget? child;
   const BarcodeScanner({
     super.key,
@@ -23,8 +21,6 @@ class BarcodeScanner extends StatelessWidget {
     required this.isShowFlashIcon,
     required this.scanType,
     required this.onScanned,
-    this.appBarTitle,
-    this.centerTitle,
     this.child,
   });
 
@@ -50,28 +46,21 @@ class BarcodeScanner extends StatelessWidget {
         });
       });
     // ignore: undefined_prefixed_name
-    ui.platformViewRegistry
-        .registerViewFactory(createdViewId, (int viewId) => iframe);
+    ui.platformViewRegistry.registerViewFactory(createdViewId, (int viewId) => iframe);
     final width = MediaQuery.of(context).size.width;
     final height = width / (16 / 9);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(appBarTitle ?? kScanPageTitle),
-        centerTitle: centerTitle,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: height,
-              width: width,
-              child: HtmlElementView(
-                viewType: createdViewId,
-              ),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SizedBox(
+            height: height,
+            width: width,
+            child: HtmlElementView(
+              viewType: createdViewId,
             ),
-            if (child != null) child!,
-          ],
-        ),
+          ),
+          if (child != null) child!,
+        ],
       ),
     );
   }
